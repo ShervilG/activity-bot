@@ -2,12 +2,16 @@
 
 const Discord = require("discord.js");
 const cron = require("node-cron");
-const config = require("./config.json");
+const dotenv = require("dotenv");
 
 /*----------------------------Constants-------------------------------------------------------*/
 
 const client = new Discord.Client();
-const CLIENT_TOKEN = config.token;
+let CLIENT_TOKEN = process.env.TOKEN;
+if (CLIENT_TOKEN === undefined) {
+	dotenv.config();
+	CLIENT_TOKEN = process.env.TOKEN;
+}
 const BORED_MESSAGES = [
 	"Knock Knock ! Anyone here ?",
 	"Casually Moans*"
