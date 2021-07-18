@@ -2,11 +2,13 @@
 
 const Discord = require("discord.js");
 const cron = require("node-cron");
+const dotenv = require("dotenv");
+dotenv.config();
 
 /*----------------------------Constants-------------------------------------------------------*/
 
 const client = new Discord.Client();
-const CLIENT_TOKEN = "ODY1OTc0NTA4MzQ2Mjc3ODg4.YPLzmw.igWiLbEBHanUWawqxmnCiQI1GpE";
+const CLIENT_TOKEN = process.env.TOKEN.toString();
 const BORED_MESSAGES = [
 	"Knock Knock ! Anyone here ?",
 	"Casually Moans*"
@@ -50,5 +52,5 @@ client.login(CLIENT_TOKEN);
 /*----------------------------Scheduled Tasks-------------------------------------------------*/
 
 cron.schedule(TASK_CRON_MAP.get('CHECK_LAST_MESSAGE').toString(), () => {
-	console.log('cron job running ');
+	console.log('cron job running');
 });
