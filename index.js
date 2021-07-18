@@ -20,7 +20,7 @@ const BORED_MESSAGES = [
 
 const TASK_CRON_MAP = new Map();
 TASK_CRON_MAP.set(
-	"CHECK_LAST_MESSAGE" , "* * * * *"
+	"CHECK_LAST_MESSAGE" , "0 */3 * * *"
 );
 
 const CHANNEL_MAP = new Map();
