@@ -17,9 +17,15 @@ const BORED_MESSAGES = [
 	"Knock Knock ! Anyone here ?",
 	"Casually Moans*"
 ];
+
 const TASK_CRON_MAP = new Map();
 TASK_CRON_MAP.set(
 	"CHECK_LAST_MESSAGE" , "* * * * *"
+);
+
+const CHANNEL_MAP = new Map();
+CHANNEL_MAP.set(
+	"bot-tests", "866237805020839946"
 );
 
 /*----------------------------Important Variables---------------------------------------------*/
@@ -42,7 +48,8 @@ const getRandomBoredMessage = () => {
 }
 
 const handleCommands = (message) => {
-	let command = message.content.split(COMMAND_PREFIX)[0];
+	let command = message.content.split(COMMAND_PREFIX)[1];
+	console.log(command);
 	switch (command) {
 		case "ping":
 			message.channel.send("pong !");
@@ -56,8 +63,12 @@ const handleCommands = (message) => {
 
 client.on('ready', () => {
 	console.log(`Logged in as ${client.user.tag}!`);
-	channels = client.channels;
-	getAllChannels(channels);
+	const test_chanel = client.channels.fetch(CHANNEL_MAP.get("bot-tests"));
+	test_chanel.then((channel) => {
+		channel.send("Imma alive !");
+	}).catch((error) => {
+		console.log('could not find channel by id : ' + CHANNEL_MAP.get("bot-tests"));
+	});
 });
 
 client.on('message', (message) => {
@@ -73,5 +84,13 @@ client.login(CLIENT_TOKEN);
 /*----------------------------Scheduled Tasks-------------------------------------------------*/
 
 cron.schedule(TASK_CRON_MAP.get('CHECK_LAST_MESSAGE').toString(), () => {
-	console.log('cron job running');
+	console.log('Check last message cron job running ->');
+	CHANNEL_MAP.forEach((channelId, channelName) => {
+		let channelPromise = client.channels.fetch(channelId);
+		channelPromise.then((channel) => {
+			channel.send(getRandomBoredMessage());
+		}).catch((error) => {
+			console.log('could not find channel : ' + channelName);
+		});
+	});
 });
