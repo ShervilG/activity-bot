@@ -7,6 +7,7 @@ const dotenv = require("dotenv");
 /*----------------------------Constants-------------------------------------------------------*/
 
 const client = new Discord.Client();
+const COMMAND_PREFIX = "--";
 let CLIENT_TOKEN = process.env.TOKEN;
 if (CLIENT_TOKEN === undefined) {
 	dotenv.config();
@@ -40,6 +41,17 @@ const getRandomBoredMessage = () => {
 	return BORED_MESSAGES[randomIndex];
 }
 
+const handleCommands = (message) => {
+	let command = message.content.split(COMMAND_PREFIX)[0];
+	switch (command) {
+		case "ping":
+			message.channel.send("pong !");
+			break;
+		default:
+			break;
+	}
+}
+
 /*----------------------------Main Logic------------------------------------------------------*/
 
 client.on('ready', () => {
@@ -48,6 +60,12 @@ client.on('ready', () => {
 	getAllChannels(channels);
 });
 
+client.on('message', (message) => {
+	if (message.author == client.user || !message.content.startsWith(COMMAND_PREFIX)) {
+		return;
+	}
+	handleCommands(message);
+});
 
 
 client.login(CLIENT_TOKEN);
