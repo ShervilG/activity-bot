@@ -91,10 +91,6 @@ cron.schedule(TASK_CRON_MAP.get('CHECK_LAST_MESSAGE').toString(), () => {
 		let channelPromise = client.channels.fetch(channelId);
 		channelPromise.then((channel) => {
 			getLatestMessageFromChannel(channel).then((message) => {
-				if (message.author === client.user) {
-					console.log("same user");
-					return;
-				}
 				console.log('last message : ' + message.content);
 				if (Date.parse(message.createdAt) <= Date.now() - THREE_HOUR_DIFF) {
 					channel.send(getRandomBoredMessage());
