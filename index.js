@@ -35,13 +35,6 @@ let server = null;
 
 /*----------------------------Helper Methods--------------------------------------------------*/
 
-const getAllChannels = (channels) => {
-	let channelMap = channels.cache;
-	channelMap.forEach((key, value) => {
-		console.log(key);
-	});	
-}
-
 const getRandomBoredMessage = () => {
 	let randomIndex = parseInt(BORED_MESSAGES.length * Math.random());
 	return BORED_MESSAGES[randomIndex];
