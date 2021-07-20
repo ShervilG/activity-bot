@@ -20,7 +20,7 @@ const BORED_MESSAGES = [
 
 const TASK_CRON_MAP = new Map();
 TASK_CRON_MAP.set(
-	"CHECK_LAST_MESSAGE" , "0 */3 * * *"
+	"CHECK_LAST_MESSAGE" , "*/10 * * * * *"
 );
 
 const CHANNEL_MAP = new Map();
@@ -52,6 +52,11 @@ const handleCommands = (message) => {
 	}
 }
 
+const getLatestMessageFromChannel = async(channel) => {
+	let messages = await channel.messages.fetch({limit : 2});
+	return messages.last();
+}
+
 /*----------------------------Main Logic------------------------------------------------------*/
 
 client.on('ready', () => {
@@ -81,7 +86,10 @@ cron.schedule(TASK_CRON_MAP.get('CHECK_LAST_MESSAGE').toString(), () => {
 	CHANNEL_MAP.forEach((channelId, channelName) => {
 		let channelPromise = client.channels.fetch(channelId);
 		channelPromise.then((channel) => {
-			channel.send(getRandomBoredMessage());
+			getLatestMessageFromChannel(channel).then((message) => {
+				console.log('last message : ' + message.content);
+				channel.send(getRandomBoredMessage());
+			});
 		}).catch((error) => {
 			console.log('could not find channel : ' + channelName);
 		});
