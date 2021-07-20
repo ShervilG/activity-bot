@@ -15,18 +15,22 @@ if (CLIENT_TOKEN === undefined) {
 }
 const BORED_MESSAGES = [
 	"Knock Knock ! Anyone here ?",
-	"Casually Moans*"
+	"Casually Moans*",
+	"Jaagte raho !!"
 ];
 
 const TASK_CRON_MAP = new Map();
 TASK_CRON_MAP.set(
-	"CHECK_LAST_MESSAGE" , "0 */3 * * *"
+	"CHECK_LAST_MESSAGE" , "* * * * *"
 );
 
 const CHANNEL_MAP = new Map();
 CHANNEL_MAP.set(
 	"bot-tests", "866237805020839946"
 );
+
+const THREE_HOUR_DIFF = (3 * 60 * 60 * 1000);
+const ONE_MINUTE_DIFF = (1 * 60 * 1000);
 
 /*----------------------------Important Variables---------------------------------------------*/
 
@@ -53,8 +57,8 @@ const handleCommands = (message) => {
 }
 
 const getLatestMessageFromChannel = async(channel) => {
-	let messages = await channel.messages.fetch({limit : 2});
-	return messages.last();
+	let messages = await channel.messages.fetch({limit : 1});
+	return messages.first();
 }
 
 /*----------------------------Main Logic------------------------------------------------------*/
@@ -87,8 +91,16 @@ cron.schedule(TASK_CRON_MAP.get('CHECK_LAST_MESSAGE').toString(), () => {
 		let channelPromise = client.channels.fetch(channelId);
 		channelPromise.then((channel) => {
 			getLatestMessageFromChannel(channel).then((message) => {
+				if (message.author === client.user) {
+					console.log("same user");
+					return;
+				}
 				console.log('last message : ' + message.content);
-				channel.send(getRandomBoredMessage());
+				if (Date.parse(message.createdAt) <= Date.now() - THREE_HOUR_DIFF) {
+					channel.send(getRandomBoredMessage());
+				}
+			}).catch((error) => {
+				console.log('error : ' + error);
 			});
 		}).catch((error) => {
 			console.log('could not find channel : ' + channelName);
