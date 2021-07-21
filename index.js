@@ -52,6 +52,7 @@ const handleCommands = (message) => {
 			message.channel.send("pong !");
 			break;
 		default:
+			message.channel.send(";__; wtf");
 			break;
 	}
 }
