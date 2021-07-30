@@ -5,6 +5,7 @@ const cron = require("node-cron");
 const dotenv = require("dotenv");
 const activityCountData = require('./activity-count.json');
 const fs = require("fs");
+const coupons = require('./coupons.json');
 
 /*----------------------------Constants-------------------------------------------------------*/
 
@@ -37,6 +38,8 @@ CHANNEL_MAP.set(
 const THREE_HOUR_DIFF = (3 * 60 * 60 * 1000);
 const ONE_MINUTE_DIFF = (1 * 60 * 1000);
 
+const activityMap = new Map(Object.entries(activityCountData));
+
 /*----------------------------Important Variables---------------------------------------------*/
 
 let channels = null;
@@ -66,6 +69,28 @@ const handleCommands = (message) => {
 const getLatestMessageFromChannel = async(channel) => {
 	let messages = await channel.messages.fetch({limit : 1});
 	return messages.first();
+}
+ 
+const disburseCouponToMostActiveUser = async() => {
+	if (activityMap.size == 0) {
+		return;
+	}
+	let mostActiveUser = {
+		user_id: "694631299323002890",
+		name: "idevice2",
+		count: -1
+	};
+	activityMap.forEach((user, userId) => {
+		if (user.count > mostActiveUser.count) {
+			mostActiveUser = user
+		}
+	});
+	const coupon = coupons[parseInt(Math.random() * coupons.length)];
+	client.users.fetch(mostActiveUser.user_id).then((user) => {
+		user.send(coupon);
+	}).catch((error) => {
+		console.log("Couldn't fetch user with id : " + mostActiveUserId + " for coupon disbursement ! " + error);
+	});
 }
 
 /*----------------------------Main Logic------------------------------------------------------*/
@@ -113,18 +138,10 @@ cron.schedule(TASK_CRON_MAP.get('CHECK_LAST_MESSAGE').toString(), () => {
 
 cron.schedule(TASK_CRON_MAP.get('DELETE_OLD_ACTIVITY_COUNT').toString(), () => {
 	console.log('Delete old activity count cron job running ->');
-	let toBeDeleted = [];
-	let objectMap = new Map(Object.entries(activityCountData));
-	objectMap.forEach((user, userId) => {
-		if (user.last_active == null) {
-			continue;
-		}
-		if (Date.parse(user.last_active) < Date.now() - THREE_HOUR_DIFF) {
-			toBeDeleted.push(userId);
-		}
+	disburseCouponToMostActiveUser().then((data) => {
+		fs.writeFileSync('activity-count.json', JSON.stringify({}), 'utf8');
+	}).catch((error) => {
+		console.log("Error while deleting old activity count !");
 	});
-	toBeDeleted.forEach((userId) => {
-		objectMap.delete(userId);
-	});
-	fs.writeFileSync('activity-count.json', JSON.stringify(objectMap), 'utf8');
+	
 });
