@@ -3,6 +3,8 @@
 const Discord = require("discord.js");
 const cron = require("node-cron");
 const dotenv = require("dotenv");
+const activityCountData = require('./activity-count.json');
+const fs = require("fs");
 
 /*----------------------------Constants-------------------------------------------------------*/
 
@@ -48,6 +50,7 @@ const getRandomBoredMessage = () => {
 }
 
 const handleCommands = (message) => {
+	console.log(message.author);
 	let command = message.content.split(COMMAND_PREFIX)[1];
 	console.log(command);
 	switch (command) {
@@ -110,4 +113,18 @@ cron.schedule(TASK_CRON_MAP.get('CHECK_LAST_MESSAGE').toString(), () => {
 
 cron.schedule(TASK_CRON_MAP.get('DELETE_OLD_ACTIVITY_COUNT').toString(), () => {
 	console.log('Delete old activity count cron job running ->');
+	let toBeDeleted = [];
+	let objectMap = new Map(Object.entries(activityCountData));
+	objectMap.forEach((user, userId) => {
+		if (user.last_active == null) {
+			continue;
+		}
+		if (Date.parse(user.last_active) < Date.now() - THREE_HOUR_DIFF) {
+			toBeDeleted.push(userId);
+		}
+	});
+	toBeDeleted.forEach((userId) => {
+		objectMap.delete(userId);
+	});
+	fs.writeFileSync('activity-count.json', JSON.stringify(objectMap), 'utf8');
 });
