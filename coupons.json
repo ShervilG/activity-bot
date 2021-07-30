@@ -1,1 +1,8 @@
-["TESTCOUPON345"]
+[
+    {
+        "code": "TESTCOUPON367",
+        "company": "TEST",
+        "tnc": [],
+        "expiry": null
+    }
+]
