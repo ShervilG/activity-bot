@@ -5,7 +5,7 @@ const cron = require("node-cron");
 const dotenv = require("dotenv");
 const activityCountData = require('./activity-count.json');
 const fs = require("fs");
-const coupons = require('./coupons.json');
+let coupons = require('./coupons.json');
 
 /*----------------------------Constants-------------------------------------------------------*/
 
@@ -72,12 +72,12 @@ const getLatestMessageFromChannel = async(channel) => {
 }
  
 const disburseCouponToMostActiveUser = async() => {
-	if (activityMap.size == 0) {
+	if (activityMap.size == 0 || coupon.length == 0) {
 		return;
 	}
 	let mostActiveUser = {
 		user_id: "694631299323002890",
-		name: "idevice2",
+		username: "idevice2",
 		count: -1
 	};
 	activityMap.forEach((user, userId) => {
@@ -88,8 +88,11 @@ const disburseCouponToMostActiveUser = async() => {
 	const coupon = coupons[parseInt(Math.random() * coupons.length)];
 	client.users.fetch(mostActiveUser.user_id).then((user) => {
 		user.send(coupon);
+		let newCoupons = coupons.filter((thisCoupon) => thisCoupon != coupon);
+		fs.writeFileSync('coupons.json', JSON.stringify(newCoupons), 'utf8');
+		coupons = newCoupons;
 	}).catch((error) => {
-		console.log("Couldn't fetch user with id : " + mostActiveUserId + " for coupon disbursement ! " + error);
+		console.log("Couldn't fetch user with id : " + mostActiveUser.user_id + " for coupon disbursement ! " + error);
 	});
 }
 
@@ -139,7 +142,7 @@ cron.schedule(TASK_CRON_MAP.get('CHECK_LAST_MESSAGE').toString(), () => {
 cron.schedule(TASK_CRON_MAP.get('DELETE_OLD_ACTIVITY_COUNT').toString(), () => {
 	console.log('Delete old activity count cron job running ->');
 	disburseCouponToMostActiveUser().then((data) => {
-		fs.writeFileSync('activity-count.json', JSON.stringify({}), 'utf8');
+		// fs.writeFileSync('activity-count.json', JSON.stringify({}), 'utf8');
 	}).catch((error) => {
 		console.log("Error while deleting old activity count !");
 	});
