@@ -23,6 +23,9 @@ const TASK_CRON_MAP = new Map();
 TASK_CRON_MAP.set(
 	"CHECK_LAST_MESSAGE" , "* * * * *"
 );
+TASK_CRON_MAP.set(
+	"DELETE_OLD_ACTIVITY_COUNT", "* * * * *"
+);
 
 const CHANNEL_MAP = new Map();
 CHANNEL_MAP.set(
@@ -103,4 +106,8 @@ cron.schedule(TASK_CRON_MAP.get('CHECK_LAST_MESSAGE').toString(), () => {
 			console.log('could not find channel : ' + channelName);
 		});
 	});
+});
+
+cron.schedule(TASK_CRON_MAP.get('DELETE_OLD_ACTIVITY_COUNT').toString(), () => {
+	console.log('Delete old activity count cron job running ->');
 });
