@@ -1,10 +1,10 @@
 // Populate cron map
 let cronMap = new Map();
 cronMap.set(
-	"CHECK_LAST_MESSAGE" , "* * * * *"
+	"CHECK_LAST_MESSAGE" , "0 */3 * * *"
 );
 cronMap.set(
-	"DELETE_OLD_ACTIVITY_COUNT", "* * * * *"
+	"DELETE_OLD_ACTIVITY_COUNT", "0 0 * * 0"
 );
 
 // Populate channel map

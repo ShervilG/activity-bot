@@ -5,7 +5,7 @@ const Discord = require("discord.js");
 const cron = require("node-cron");
 const dotenv = require("dotenv");
 const activityCountData = require('./activity-count.json');
-const fileHelper = require('./helper/file-helper');
+const activityService = require('./service/activity-service');
 const couponService = require('./service/coupon-service');
 
 /*----------------------------Constants-------------------------------------------------------*/
@@ -33,17 +33,24 @@ const getRandomBoredMessage = () => {
 }
 
 const handleCommands = (message) => {
-	console.log(message.author);
-	let command = message.content.split(Constant.COMMAND_PREFIX)[1];
-	console.log(command);
-	switch (command) {
-		case "ping":
-			message.channel.send("pong !");
-			break;
-		default:
-			message.channel.send(";__; wtf");
-			break;
-	}
+	console.log("Message author is : " + message.author);
+	activityService.updateUserActivity(message.author).then((data) => {
+		if (!message.content.startsWith(Constant.COMMAND_PREFIX)) {
+			return;
+		}
+		let command = message.content.split(Constant.COMMAND_PREFIX)[1];
+		console.log(command);
+		switch (command) {
+			case "ping":
+				message.channel.send("pong !");
+				break;
+			default:
+				message.channel.send(";__; wtf");
+				break;
+		}
+	}).catch((err) => {
+		console.log("error : " + err + " while handeling messages");
+	});
 }
 
 const getLatestMessageFromChannel = async(channel) => {
@@ -64,7 +71,7 @@ client.on('ready', () => {
 });
 
 client.on('message', (message) => {
-	if (message.author == client.user || !message.content.startsWith(Constant.COMMAND_PREFIX)) {
+	if (message.author == client.user) {
 		return;
 	}
 	handleCommands(message);
@@ -96,7 +103,7 @@ cron.schedule(Constant.TASK_CRON_MAP.get('CHECK_LAST_MESSAGE').toString(), () =>
 cron.schedule(Constant.TASK_CRON_MAP.get('DELETE_OLD_ACTIVITY_COUNT').toString(), () => {
 	console.log('Delete old activity count cron job running ->');
 	couponService.disburseCouponToMostActiveUser(client, activityMap).then((data) => {
-		//fileHelper.writeDataToFileSync({}, '../activity-count.json');
+		activityService.deleteLastActivity();
 	}).catch((error) => {
 		console.log("Error " + error + " while deleting old activity count !");
 	});
